@@ -12803,26 +12803,7 @@ function getShowsByTerm(term) {
                                 summary: show.summary,
                                 image: show.image ? show.image.medium : MISSING_IMAGE_URL,
                             };
-                        })
-                        /* [
-                          {
-                            id: 1767,
-                            name: "The Bletchley Circle",
-                            summary:
-                              `<p><b>The Bletchley Circle</b> follows the journey of four ordinary
-                                 women with extraordinary skills that helped to end World War II.</p>
-                               <p>Set in 1952, Susan, Millie, Lucy and Jean have returned to their
-                                 normal lives, modestly setting aside the part they played in
-                                 producing crucial intelligence, which helped the Allies to victory
-                                 and shortened the war. When Susan discovers a hidden code behind an
-                                 unsolved murder she is met by skepticism from the police. She
-                                 quickly realises she can only begin to crack the murders and bring
-                                 the culprit to justice with her former friends.</p>`,
-                            image:
-                                "http://static.tvmaze.com/uploads/images/medium_portrait/147/369403.jpg"
-                          
-                        ] }*/
-                    ];
+                        })];
             }
         });
     });
@@ -12832,7 +12813,7 @@ function populateShows(shows) {
     $showsList.empty();
     for (var _i = 0, shows_1 = shows; _i < shows_1.length; _i++) {
         var show = shows_1[_i];
-        var $show = $("<div data-show-id=\"" + show.id + "\" class=\"Show col-md-12 col-lg-6 mb-4\">\n         <div class=\"media\">\n           <img\n              src=\"http://static.tvmaze.com/uploads/images/medium_portrait/160/401704.jpg\"\n              alt=\"Bletchly Circle San Francisco\"\n              class=\"w-25 mr-3\">\n           <div class=\"media-body\">\n             <h5 class=\"text-primary\">" + show.name + "</h5>\n             <div><small>" + show.summary + "</small></div>\n             <button class=\"btn btn-outline-light btn-sm Show-getEpisodes\">\n               Episodes\n             </button>\n           </div>\n         </div>\n       </div>\n      ");
+        var $show = $("<div data-show-id=\"" + show.id + "\" class=\"Show col-md-12 col-lg-6 mb-4\">\n         <div class=\"media\">\n           <img\n              src=\"" + show.image + "\"\n              alt=\"" + show.name + "\"\n              class=\"w-25 mr-3\">\n           <div class=\"media-body\">\n             <h5 class=\"text-primary\">" + show.name + "</h5>\n             <div><small>" + show.summary + "</small></div>\n             <button class=\"btn btn-outline-light btn-sm Show-getEpisodes\">\n               Episodes\n             </button>\n           </div>\n         </div>\n       </div>\n      ");
         $showsList.append($show);
     }
 }
@@ -12850,6 +12831,7 @@ function searchForShowAndDisplay() {
                 case 1:
                     shows = _a.sent();
                     $episodesArea.hide();
+                    $showsList.show();
                     populateShows(shows);
                     return [2 /*return*/];
             }
@@ -12873,9 +12855,55 @@ $searchForm.on("submit", function (evt) {
 /** Given a show ID, get from API and return (promise) array of episodes:
  *      { id, name, season, number }
  */
-// async function getEpisodesOfShow(id) { }
+function getEpisodesOfShow(id) {
+    return __awaiter(this, void 0, void 0, function () {
+        var response;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0: return [4 /*yield*/, axios_1.default({
+                        url: TVMAZE_API_URL + "shows/" + id + "/episodes",
+                        method: "GET",
+                    })];
+                case 1:
+                    response = _a.sent();
+                    return [2 /*return*/, response.data.map(function (e) { return ({
+                            id: e.id,
+                            name: e.name,
+                            season: e.season,
+                            number: e.number,
+                        }); })];
+            }
+        });
+    });
+}
 /** Write a clear docstring for this function... */
-// function populateEpisodes(episodes) { }
+function populateEpisodes(episodes) {
+    $episodesList.empty();
+    for (var _i = 0, episodes_1 = episodes; _i < episodes_1.length; _i++) {
+        var episode = episodes_1[_i];
+        var $item = $("<li>\n         " + episode.name + "\n         (season " + episode.season + ", episode " + episode.number + ")\n       </li>\n      ");
+        $episodesList.append($item);
+    }
+    $episodesArea.show();
+}
+function getEpisodesAndDisplay(evt) {
+    return __awaiter(this, void 0, void 0, function () {
+        var showId, episodes;
+        return __generator(this, function (_a) {
+            switch (_a.label) {
+                case 0:
+                    showId = $(evt.target).closest(".Show").data("show-id");
+                    return [4 /*yield*/, getEpisodesOfShow(showId)];
+                case 1:
+                    episodes = _a.sent();
+                    $showsList.hide();
+                    populateEpisodes(episodes);
+                    return [2 /*return*/];
+            }
+        });
+    });
+}
+$showsList.on("click", ".Show-getEpisodes", getEpisodesAndDisplay);
 
 
 /***/ })
